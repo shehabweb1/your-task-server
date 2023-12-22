@@ -71,9 +71,9 @@ run().catch(console.dir);
 
 
 
-app.get('/', function(req, res){
-  res.send("Server is running")
-});
+app.get('/', (req, res) => {
+  res.send("Welcome to YourTask Server");
+})
  
 app.listen(port, () => {
   console.log(`web server listening on port ${port}`)

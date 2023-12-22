@@ -60,14 +60,14 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/api/tasks', async (req, res) => {
+    app.post('/api/tasks', verifyToken, async (req, res) => {
       const addTask = req.body;
       const result = await tasksCollection.insertOne(addTask);
       res.send(result);
     });
 
 
-    app.get('/api/tasks', async (req, res) => {
+    app.get('/api/tasks', verifyToken, async (req, res) => {
       let query = {};
       const email = req.query.email;
       if (email) {
@@ -77,7 +77,7 @@ async function run() {
       res.send(result);
     });
   
-    app.patch('/api/tasks/:id', async (req, res) => {
+    app.patch('/api/tasks/:id', verifyToken, async (req, res) => {
       const { category } = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -90,7 +90,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put('/api/tasks/:id', async (req, res) => {
+    app.put('/api/tasks/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedTask = req.body;
@@ -103,7 +103,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/api/tasks/:id', async (req, res) => {
+    app.delete('/api/tasks/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await tasksCollection.deleteOne(query);

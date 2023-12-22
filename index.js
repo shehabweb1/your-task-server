@@ -24,7 +24,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    
+
     const userCollection = client.db("yourTask").collection("users");
     const tasksCollection = client.db('yourTask').collection('tasks');
 
@@ -48,7 +48,6 @@ async function run() {
       });
     }
 
-
     app.post("/api/users", async (req, res)=>{
       const cursor = req.body;
       const result = await userCollection.insertOne(cursor);
@@ -56,7 +55,7 @@ async function run() {
     })
 
     app.get("/api/users", async (req, res)=>{
-      const result = await userCollection.find(cursor).toArray();
+      const result = await userCollection.find().toArray();
       res.send(result);
     })
 
@@ -65,7 +64,6 @@ async function run() {
       const result = await tasksCollection.insertOne(addTask);
       res.send(result);
     });
-
 
     app.get('/api/tasks', verifyToken, async (req, res) => {
       let query = {};

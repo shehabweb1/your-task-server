@@ -26,6 +26,7 @@ async function run() {
   try {
     
     const userCollection = client.db("yourTask").collection("users");
+    const tasksCollection = client.db('yourTask').collection('tasks');
 
     app.post('/jwt', async(req, res)=>{
       const user = req.body;
@@ -59,7 +60,55 @@ async function run() {
       res.send(result);
     })
 
+    app.post('/api/tasks', async (req, res) => {
+      const addTask = req.body;
+      const result = await tasksCollection.insertOne(addTask);
+      res.send(result);
+    });
 
+
+    app.get('/api/tasks', async (req, res) => {
+      let query = {};
+      const email = req.query.email;
+      if (email) {
+        query.email = email;
+      }
+      const result = await tasksCollection.find(query).toArray();
+      res.send(result);
+    });
+  
+    app.patch('/api/tasks/:id', async (req, res) => {
+      const { category } = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          category: category,
+        },
+      };
+      const result = await tasksCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.put('/api/tasks/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedTask = req.body;
+      const updatedDoc = {
+        $set: {
+          ...updatedTask,
+        },
+      };
+      const result = await tasksCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete('/api/tasks/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await tasksCollection.deleteOne(query);
+      res.send(result);
+    });
 
 
   } finally {

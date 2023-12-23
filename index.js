@@ -1,11 +1,10 @@
 const express = require('express')
 const cors = require('cors')
-const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000;
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 // Middleware
@@ -28,26 +27,6 @@ async function run() {
     const userCollection = client.db("yourTask").collection("users");
     const tasksCollection = client.db('yourTask').collection('tasks');
 
-    app.post('/jwt', async(req, res)=>{
-      const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn: 3600000})
-      res.send({token});
-    });
-
-    const verifyToken = (req, res, next) => {
-      if(!req.headers.authorization){
-        return res.status(401).send({message: "unauthorized access"});
-      }
-      const token = req.headers.authorization.split(' ')[1];
-      jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
-        if(err){
-          return res.status(401).send({message: "unauthorized access"})
-        }
-        req.decoded = decoded;
-        next();
-      });
-    }
-
     app.post("/api/users", async (req, res)=>{
       const cursor = req.body;
       const result = await userCollection.insertOne(cursor);
@@ -59,23 +38,20 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/api/tasks', verifyToken, async (req, res) => {
+    
+    app.post('/api/tasks', async (req, res) => {
       const addTask = req.body;
       const result = await tasksCollection.insertOne(addTask);
       res.send(result);
     });
-
-    app.get('/api/tasks', verifyToken, async (req, res) => {
-      let query = {};
-      const email = req.query.email;
-      if (email) {
-        query.email = email;
-      }
+    
+    app.get('/api/tasks/:email', async (req, res) => {
+      const query = { email: req.params.email }
       const result = await tasksCollection.find(query).toArray();
       res.send(result);
     });
   
-    app.patch('/api/tasks/:id', verifyToken, async (req, res) => {
+    app.patch('/api/tasks/:id', async (req, res) => {
       const { category } = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -88,7 +64,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put('/api/tasks/:id', verifyToken, async (req, res) => {
+    app.put('/api/tasks/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedTask = req.body;
@@ -101,7 +77,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/api/tasks/:id', verifyToken, async (req, res) => {
+    app.delete('/api/tasks/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await tasksCollection.deleteOne(query);
